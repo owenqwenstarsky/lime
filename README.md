@@ -1,8 +1,16 @@
-# Lime
+<p align="center"><strong>Codex CLI</strong> is a clean, modern terminal text editor written in Rust.</p>
 
-Lime is a clean, modern terminal text editor written in Rust.
+<p align="center">
+  <img
+    src=".github/assets/preview.gif"
+    alt="Lime editor preview"
+    width="80%"
+  />
+</p>
 
-It aims to be approachable like Nano, efficient and clean like Vim, and easy to use like VS Code, while keeping a standard non-modal editing model.
+<p>It aims to be approachable like Nano, efficient and clean like Vim, and easy to use like VS Code, while keeping a standard non-modal editing model.</p>
+
+---
 
 ## Status
 
