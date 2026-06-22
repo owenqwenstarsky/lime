@@ -32,3 +32,4 @@ serde = { version = "1", features = ["derive"] }
 toml = "0.8"
 dirs = "5"
 tempfile = "3"
+pulldown-cmark = { version = "0.13", default-features = false }

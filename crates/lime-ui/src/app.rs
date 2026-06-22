@@ -18,7 +18,8 @@ use crate::config::Config;
 use crate::editor_view::{gutter_width, render_editor, Viewport};
 use crate::file_picker::FilePickerState;
 use crate::input::{map_editing_key, AppAction};
-use crate::layout::{app_layout, centered_rect};
+use crate::layout::{app_layout, centered_rect, with_preview};
+use crate::markdown_preview::render_preview;
 use crate::prompt::{ConfirmKind, ConfirmState, PromptKind, PromptState};
 use crate::status_bar::{render_status_bar, StatusInfo};
 use crate::terminal::TerminalSession;
@@ -65,6 +66,9 @@ pub struct App {
     highlights: Vec<HighlightSpan>,
     highlighted_revision: Option<u64>,
     highlighted_language: Language,
+    preview_open: bool,
+    preview_top_line: usize,
+    preview_revision: Option<u64>,
 }
 
 impl App {
@@ -90,6 +94,9 @@ impl App {
             highlights: Vec::new(),
             highlighted_revision: None,
             highlighted_language: Language::PlainText,
+            preview_open: false,
+            preview_top_line: 0,
+            preview_revision: None,
         };
 
         if let Some(path) = options.path {
@@ -181,7 +188,13 @@ impl App {
 
     fn draw(&mut self, frame: &mut Frame<'_>) {
         let area = frame.area();
-        let layout = app_layout(area);
+        let base_layout = app_layout(area);
+        let show_preview = self.preview_open && self.language == Language::Markdown;
+        let layout = if show_preview {
+            with_preview(base_layout, 55)
+        } else {
+            base_layout
+        };
         let total_lines = self.editor.line_count();
         let gutter = gutter_width(total_lines, self.config.show_line_numbers);
         let text_width = layout.editor.width.saturating_sub(gutter) as usize;
@@ -201,6 +214,24 @@ impl App {
             &self.theme,
             &self.highlights,
         );
+
+        if let Some(preview_area) = layout.preview {
+            let revision = self.editor.revision();
+            if self.preview_revision != Some(revision) {
+                self.preview_revision = Some(revision);
+            }
+            let preview_text = self.editor.text();
+            let preview_lines = crate::markdown_preview::render_lines(&preview_text, &self.theme);
+            let height = preview_area.height.saturating_sub(2) as usize;
+            self.ensure_preview_visible(preview_lines.len(), height);
+            render_preview(
+                frame,
+                preview_area,
+                &preview_text,
+                self.preview_top_line,
+                &self.theme,
+            );
+        }
 
         let file_name = self.file_label();
         render_status_bar(
@@ -254,6 +285,10 @@ impl App {
             }
             AppAction::OpenSearch => {
                 self.mode = Mode::Prompt(PromptState::new(PromptKind::Search, "Search"));
+                Ok(())
+            }
+            AppAction::ToggleMarkdownPreview => {
+                self.toggle_preview();
                 Ok(())
             }
             AppAction::ClosePopup | AppAction::Cancel => {
@@ -589,6 +624,9 @@ impl App {
             self.language = language;
             self.highlighted_revision = None;
             self.highlighter.clear();
+            if language != Language::Markdown {
+                self.preview_open = false;
+            }
         }
     }
 
@@ -603,6 +641,37 @@ impl App {
         self.highlights = self.highlighter.highlight(&text, self.language, revision);
         self.highlighted_revision = Some(revision);
         self.highlighted_language = self.language;
+    }
+
+    fn toggle_preview(&mut self) {
+        if self.language != Language::Markdown {
+            self.set_status("Preview available for markdown only");
+            return;
+        }
+        self.preview_open = !self.preview_open;
+        if self.preview_open {
+            self.preview_top_line = 0;
+            self.preview_revision = None;
+            self.set_status("Preview opened");
+        } else {
+            self.set_status("Preview closed");
+        }
+    }
+
+    fn ensure_preview_visible(&mut self, total_preview_lines: usize, viewport_height: usize) {
+        if viewport_height == 0 {
+            return;
+        }
+        let cursor_line = self.editor.cursor().position.line;
+        let margin = 2usize.min(viewport_height / 3);
+        if cursor_line < self.preview_top_line + margin {
+            self.preview_top_line = cursor_line.saturating_sub(margin);
+        } else if cursor_line >= self.preview_top_line + viewport_height.saturating_sub(margin) {
+            self.preview_top_line =
+                cursor_line.saturating_sub(viewport_height.saturating_sub(margin + 1));
+        }
+        let max_top = total_preview_lines.saturating_sub(viewport_height);
+        self.preview_top_line = self.preview_top_line.min(max_top);
     }
 
     fn file_label(&self) -> String {

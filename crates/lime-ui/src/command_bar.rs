@@ -33,6 +33,14 @@ pub fn render_help_bar(frame: &mut Frame<'_>, area: Rect, theme: &UiTheme) {
             theme.normal().fg(theme.help_fg).bg(theme.help_bg),
         ),
         Span::styled(
+            " Ctrl-P ",
+            theme.normal().fg(theme.heading).bg(theme.help_bg),
+        ),
+        Span::styled(
+            "Preview ",
+            theme.normal().fg(theme.help_fg).bg(theme.help_bg),
+        ),
+        Span::styled(
             " Ctrl-Q ",
             theme.normal().fg(theme.heading).bg(theme.help_bg),
         ),

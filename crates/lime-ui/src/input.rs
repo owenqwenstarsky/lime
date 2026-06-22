@@ -9,6 +9,7 @@ pub enum AppAction {
     OpenFilePicker,
     OpenGoToLine,
     OpenSearch,
+    ToggleMarkdownPreview,
     ClosePopup,
     Confirm,
     Cancel,
@@ -26,6 +27,7 @@ pub fn map_editing_key(key: KeyEvent) -> AppAction {
             KeyCode::Char('f') | KeyCode::Char('F') => AppAction::OpenFilePicker,
             KeyCode::Char('g') | KeyCode::Char('G') => AppAction::OpenGoToLine,
             KeyCode::Char('r') | KeyCode::Char('R') => AppAction::OpenSearch,
+            KeyCode::Char('p') | KeyCode::Char('P') => AppAction::ToggleMarkdownPreview,
             KeyCode::Char('z') | KeyCode::Char('Z') => AppAction::Editor(EditorCommand::Undo),
             KeyCode::Char('y') | KeyCode::Char('Y') => AppAction::Editor(EditorCommand::Redo),
             KeyCode::Char('a') | KeyCode::Char('A') => {
@@ -76,5 +78,11 @@ mod tests {
     fn maps_text_input() {
         let action = map_editing_key(KeyEvent::new(KeyCode::Char('x'), KeyModifiers::NONE));
         assert_eq!(action, AppAction::Editor(EditorCommand::InsertChar('x')));
+    }
+
+    #[test]
+    fn maps_preview_toggle_shortcut() {
+        let action = map_editing_key(KeyEvent::new(KeyCode::Char('p'), KeyModifiers::CONTROL));
+        assert_eq!(action, AppAction::ToggleMarkdownPreview);
     }
 }

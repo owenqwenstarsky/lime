@@ -4,6 +4,8 @@ Lime is a clean, modern terminal text editor written in Rust.
 
 It aims to be approachable like Nano, efficient and clean like Vim, and easy to use like VS Code, while keeping a standard non-modal editing model.
 
+This is a test edit.
+
 ## Status
 
 This repository contains the first usable implementation:
@@ -45,6 +47,7 @@ lime --force huge.log
 | `Ctrl-F` | Open file picker |
 | `Ctrl-R` | Search current file |
 | `Ctrl-G` | Go to line |
+| `Ctrl-P` | Toggle markdown preview |
 | `Ctrl-Z` | Undo |
 | `Ctrl-Y` | Redo |
 | `Ctrl-A` | Start of line |
