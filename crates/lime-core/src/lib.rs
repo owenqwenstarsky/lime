@@ -1,0 +1,20 @@
+pub mod buffer;
+pub mod command;
+pub mod cursor;
+pub mod edit;
+pub mod error;
+pub mod file;
+pub mod history;
+pub mod movement;
+pub mod search;
+pub mod selection;
+
+pub use buffer::{LineEnding, TextBuffer};
+pub use command::{CommandResult, EditorCommand};
+pub use cursor::{Cursor, Position};
+pub use edit::{Editor, TextEdit, TextRange};
+pub use error::{LimeError, Result};
+pub use file::{FileOpenDecision, FileOpenPolicy};
+pub use history::EditTransaction;
+pub use search::SearchMatch;
+pub use selection::Selection;
